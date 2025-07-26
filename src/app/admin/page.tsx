@@ -116,20 +116,8 @@ export default function AdminDashboard() {
           <button
             onClick={() => fetchRequests(date)}
             disabled={isLoading}
-            className="bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center gap-2 disabled:bg-violet-800 disabled:cursor-not-allowed"
+            className="w-full flex justify-center bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-md transition-colors items-center gap-2 disabled:bg-violet-800 disabled:cursor-not-allowed"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`}
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.899 2.139l.894.447a1 1 0 01-1.789 1.789l-.894-.447A5.002 5.002 0 005.899 9.101V11a1 1 0 11-2 0V3a1 1 0 011-1zm12 14a1 1 0 01-1-1v-2.101a7.002 7.002 0 01-11.899-2.139l-.894-.447a1 1 0 111.789-1.789l.894.447A5.002 5.002 0 0014.101 10.899V9a1 1 0 112 0v8a1 1 0 01-1 1z"
-                clipRule="evenodd"
-              />
-            </svg>
             {isLoading ? "Refreshing..." : "Refresh List"}
           </button>
         </div>
