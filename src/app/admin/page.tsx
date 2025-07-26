@@ -28,8 +28,12 @@ export default function AdminDashboard() {
       }
       const data = await res.json();
       setRequests(data?.data || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
       setRequests([]);
     }
   };
@@ -61,8 +65,12 @@ export default function AdminDashboard() {
           req._id === id ? { ...req, status: "Taken" } : req
         )
       );
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     }
   };
 
@@ -75,17 +83,24 @@ export default function AdminDashboard() {
           </h1>
         </div>
         <div className="flex justify-between items-center mb-6 text-gray-400">
-            <p>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <div className="flex items-center gap-2">
-                <label htmlFor="date-filter">Filter by Date:</label>
-                <input
-                    id="date-filter"
-                    type="date"
-                    value={date}
-                    onChange={handleDateChange}
-                    className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
-                />
-            </div>
+          <p>
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+          <div className="flex items-center gap-2">
+            <label htmlFor="date-filter">Filter by Date:</label>
+            <input
+              id="date-filter"
+              type="date"
+              value={date}
+              onChange={handleDateChange}
+              className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
+            />
+          </div>
         </div>
 
         <div className="mb-6">
@@ -165,7 +180,11 @@ export default function AdminDashboard() {
                     {request.artist}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    {new Date(request.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {request.status === "Taken" ? (
