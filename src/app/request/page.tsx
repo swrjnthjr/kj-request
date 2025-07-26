@@ -37,6 +37,7 @@ export default function UserRequest() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(5);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
   const [placeholder, setPlaceholder] = useState(placeholders[0]);
@@ -44,9 +45,12 @@ export default function UserRequest() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
 
     if (!name || !song || !artist) {
       setError("Please fill out all required fields.");
+      setTimeout(() => setError(null), 5000);
+      setIsLoading(false);
       return;
     }
 
@@ -73,6 +77,8 @@ export default function UserRequest() {
         setError("An unknown error occurred");
       }
       setTimeout(() => setError(null), 5000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -198,9 +204,10 @@ export default function UserRequest() {
               </div>
               <button
                 type="submit"
-                className="w-full py-3 px-4 bg-violet-600 hover:bg-violet-700 rounded-md text-white font-bold text-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-violet-500/50 shadow-lg hover:shadow-violet-500/40 transform hover:-translate-y-0.5"
+                disabled={isLoading}
+                className="w-full py-3 px-4 bg-violet-600 hover:bg-violet-700 rounded-md text-white font-bold text-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-violet-500/50 shadow-lg hover:shadow-violet-500/40 transform hover:-translate-y-0.5 disabled:bg-violet-800 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
               >
-                Send Request
+                {isLoading ? "Sending..." : "Send Request"}
               </button>
             </form>
 
