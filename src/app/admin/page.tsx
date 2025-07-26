@@ -18,9 +18,12 @@ export default function AdminDashboard() {
   const [requests, setRequests] = useState<SongRequest[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const fetchRequests = async (filterDate: string) => {
     setError(null);
+    setIsLoading(true);
     try {
       const res = await fetch(`/api/requests?date=${filterDate}`);
       if (!res.ok) {
@@ -35,6 +38,8 @@ export default function AdminDashboard() {
         setError("An unknown error occurred");
       }
       setRequests([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -46,7 +51,8 @@ export default function AdminDashboard() {
     setDate(e.target.value);
   };
 
-  const markAsTaken = async (id: string) => {
+  const handleMarkAsTaken = async (id: string) => {
+    setUpdatingId(id);
     try {
       const res = await fetch(`/api/requests/${id}/status`, {
         method: "PATCH",
@@ -71,6 +77,8 @@ export default function AdminDashboard() {
       } else {
         setError("An unknown error occurred");
       }
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -97,8 +105,9 @@ export default function AdminDashboard() {
               id="date-filter"
               type="date"
               value={date}
-              onChange={handleDateChange}
-              className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
+              onChange={(e) => setDate(e.target.value)}
+              disabled={isLoading}
+              className="bg-gray-700 border border-gray-600 rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none disabled:opacity-50"
             />
           </div>
         </div>
@@ -106,9 +115,22 @@ export default function AdminDashboard() {
         <div className="mb-6">
           <button
             onClick={() => fetchRequests(date)}
-            className="w-full py-3 px-4 bg-violet-600 hover:bg-violet-700 rounded-lg text-white font-bold text-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-violet-500/50 shadow-lg hover:shadow-violet-500/40 transform hover:-translate-y-1"
+            disabled={isLoading}
+            className="bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center gap-2 disabled:bg-violet-800 disabled:cursor-not-allowed"
           >
-            Refresh List
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`}
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.899 2.139l.894.447a1 1 0 01-1.789 1.789l-.894-.447A5.002 5.002 0 005.899 9.101V11a1 1 0 11-2 0V3a1 1 0 011-1zm12 14a1 1 0 01-1-1v-2.101a7.002 7.002 0 01-11.899-2.139l-.894-.447a1 1 0 111.789-1.789l.894.447A5.002 5.002 0 0014.101 10.899V9a1 1 0 112 0v8a1 1 0 01-1 1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            {isLoading ? "Refreshing..." : "Refresh List"}
           </button>
         </div>
 
@@ -119,94 +141,140 @@ export default function AdminDashboard() {
         )}
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-700/50">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Name
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Song Title
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Artist
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Time
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Status
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {requests?.map((request) => (
-                <tr
-                  key={request._id}
-                  className={`${
-                    request.status === "Taken"
-                      ? "line-through text-gray-500"
-                      : ""
-                  }`}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {request.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {request.song}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {request.artist}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {new Date(request.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                    })}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {request.status === "Taken" ? (
-                      <TakenIcon />
-                    ) : (
-                      <span className="text-yellow-400">Pending</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {request.status === "Pending" && (
-                      <button
-                        onClick={() => markAsTaken(request._id)}
-                        className="text-violet-400 hover:text-violet-300"
-                      >
-                        <PlayIcon />
-                      </button>
-                    )}
-                  </td>
+          {isLoading ? (
+            <p className="text-center p-8 text-gray-400">Loading requests...</p>
+          ) : requests.length > 0 ? (
+            <table className="min-w-full divide-y divide-gray-700">
+              <thead className="bg-gray-700/50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                  >
+                    Name
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                  >
+                    Song Title
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                  >
+                    Artist
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                  >
+                    Time
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                  >
+                    Action
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-gray-800 divide-y divide-gray-700">
+                {requests.map((request) => (
+                  <tr
+                    key={request._id}
+                    className={`${
+                      request.status === "Taken"
+                        ? "line-through text-gray-500"
+                        : ""
+                    }`}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {request.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {request.song}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {request.artist}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {new Date(request.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {request.status === "Taken" ? (
+                        <TakenIcon />
+                      ) : (
+                        <span className="text-yellow-400">Pending</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      {request.status !== "Taken" && (
+                        <button
+                          onClick={() => handleMarkAsTaken(request._id)}
+                          disabled={updatingId === request._id}
+                          className="text-green-400 hover:text-green-300 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-wait"
+                        >
+                          {updatingId === request._id ? (
+                            <svg
+                              className="animate-spin h-5 w-5 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          ) : (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                          {updatingId === request._id
+                            ? "Updating..."
+                            : "Mark as Taken"}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-center p-8 text-gray-400">
+              No requests found for the selected date.
+            </p>
+          )}
         </div>
       </div>
     </main>
