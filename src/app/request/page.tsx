@@ -41,6 +41,24 @@ export default function UserRequest() {
   const router = useRouter();
 
   const [placeholder, setPlaceholder] = useState(placeholders[0]);
+  const [isRequestOpen, setIsRequestOpen] = useState<boolean | null>(null);
+  const [statusLoading, setStatusLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch request status on mount
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("/api/request-status");
+        const data = await res.json();
+        setIsRequestOpen(data.open);
+      } catch {
+        setIsRequestOpen(true); // fallback: allow requests if error
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+    fetchStatus();
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -137,79 +155,100 @@ export default function UserRequest() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-300 mb-1"
-                >
-                  Your Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
-                  placeholder={placeholder.name}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="song"
-                  className="block text-sm font-medium text-gray-300 mb-1"
-                >
-                  Song Title
-                </label>
-                <input
-                  id="song"
-                  type="text"
-                  value={song}
-                  onChange={(e) => setSong(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
-                  placeholder={placeholder.song}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="artist"
-                  className="block text-sm font-medium text-gray-300 mb-1"
-                >
-                  Artist
-                </label>
-                <input
-                  id="artist"
-                  type="text"
-                  value={artist}
-                  onChange={(e) => setArtist(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
-                  placeholder={placeholder.artist}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium text-gray-300 mb-1"
-                >
-                  Message (Optional)
-                </label>
-                <textarea
-                  id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
-                  placeholder="Any special dedication?"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3 px-4 bg-violet-600 hover:bg-violet-700 rounded-md text-white font-bold text-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-violet-500/50 shadow-lg hover:shadow-violet-500/40 transform hover:-translate-y-0.5 disabled:bg-violet-800 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
+            {/* Show request paused message if closed */}
+            {isRequestOpen === false && !statusLoading && (
+              <div
+                className="mb-8 flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border border-cyan-400/70 bg-gray-900/80 backdrop-blur-md shadow-xl"
+                style={{
+                  maxWidth: 480,
+                  margin: "0 auto",
+                }}
               >
-                {isLoading ? "Sending..." : "Send Request"}
-              </button>
-            </form>
+                <div className="text-2xl font-extrabold text-cyan-200 tracking-tight text-center">
+                  Song requests are paused
+                </div>
+                <div className="text-base font-medium text-cyan-100 text-center opacity-80">
+                  Please hang tight! The KJ will open requests soon.
+                  <br />
+                  Check back in a bit.
+                </div>
+              </div>
+            )}
+            {isRequestOpen !== false && !statusLoading && (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-300 mb-1"
+                  >
+                    Your Name
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
+                    placeholder={placeholder.name}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="song"
+                    className="block text-sm font-medium text-gray-300 mb-1"
+                  >
+                    Song Title
+                  </label>
+                  <input
+                    id="song"
+                    type="text"
+                    value={song}
+                    onChange={(e) => setSong(e.target.value)}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
+                    placeholder={placeholder.song}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="artist"
+                    className="block text-sm font-medium text-gray-300 mb-1"
+                  >
+                    Artist
+                  </label>
+                  <input
+                    id="artist"
+                    type="text"
+                    value={artist}
+                    onChange={(e) => setArtist(e.target.value)}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
+                    placeholder={placeholder.artist}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-gray-300 mb-1"
+                  >
+                    Message (Optional)
+                  </label>
+                  <textarea
+                    id="message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition"
+                    placeholder="Any special dedication?"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 bg-violet-600 hover:bg-violet-700 rounded-md text-white font-bold text-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-violet-500/50 shadow-lg hover:shadow-violet-500/40 transform hover:-translate-y-0.5 disabled:bg-violet-800 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
+                >
+                  {isLoading ? "Sending..." : "Send Request"}
+                </button>
+              </form>
+            )}
 
             <div className="mt-6 pt-6 border-t border-gray-700 flex flex-col items-center space-y-2">
               <p className="text-gray-400">Follow your KJ on Insta</p>
