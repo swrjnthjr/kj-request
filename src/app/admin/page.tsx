@@ -122,6 +122,12 @@ export default function AdminDashboard() {
     }
   };
 
+  const sortedRequests = [...requests].sort((a, b) => {
+    if (a.status === "Taken" && b.status !== "Taken") return 1;
+    if (a.status !== "Taken" && b.status === "Taken") return -1;
+    return 0;
+  });
+
   return (
     <main className="flex min-h-screen flex-col items-center bg-gray-900 text-white p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-6xl bg-gray-800 rounded-xl shadow-2xl p-6 sm:p-8">
@@ -253,7 +259,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-gray-800 divide-y divide-gray-700">
-                {requests.map((request) => (
+                {sortedRequests.map((request) => (
                   <tr
                     key={request._id}
                     className={`${
